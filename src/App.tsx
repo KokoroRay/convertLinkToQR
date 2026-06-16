@@ -12,6 +12,7 @@ function App() {
   const [url, setUrl] = useState('https://example.com');
   const [fgColor, setFgColor] = useState('#ffffff');
   const [bgColor, setBgColor] = useState('#1e293b');
+  const [transparentBg, setTransparentBg] = useState(false);
   const [level, setLevel] = useState<ErrorCorrectionLevel>('H');
   
   // Style states
@@ -23,12 +24,15 @@ function App() {
   const [includeLogo, setIncludeLogo] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>('');
 
+  // Download states
+  const [fileExt, setFileExt] = useState<'png' | 'jpeg' | 'webp' | 'svg'>('png');
+
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling>(
     new QRCodeStyling({
-      width: 280,
-      height: 280,
-      margin: 10,
+      width: 1024,
+      height: 1024,
+      margin: 0,
       type: 'canvas',
     })
   );
@@ -44,7 +48,7 @@ function App() {
         type: dotType,
       },
       backgroundOptions: {
-        color: bgColor,
+        color: transparentBg ? 'transparent' : bgColor,
       },
       cornersSquareOptions: {
         color: fgColor,
@@ -61,7 +65,7 @@ function App() {
         imageSize: 0.4,
       },
     });
-  }, [url, fgColor, bgColor, level, dotType, cornerSquareType, cornerDotType, includeLogo, logoUrl]);
+  }, [url, fgColor, bgColor, transparentBg, level, dotType, cornerSquareType, cornerDotType, includeLogo, logoUrl]);
 
   useEffect(() => {
     if (qrRef.current) {
@@ -71,7 +75,8 @@ function App() {
   }, []);
 
   const handleDownload = () => {
-    qrCode.current.download({ name: 'qrcode', extension: 'png' });
+    // Generate high quality file
+    qrCode.current.download({ name: 'qrcode_high_res', extension: fileExt });
   };
 
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -157,14 +162,24 @@ function App() {
                   className="color-picker"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
+                  disabled={transparentBg}
                 />
                 <input
                   type="text"
                   className="input-field"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
+                  disabled={transparentBg}
                 />
               </div>
+              <label className="checkbox-label mt-2" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={transparentBg}
+                  onChange={(e) => setTransparentBg(e.target.checked)}
+                />
+                <span className="checkbox-text" style={{ fontSize: '0.85rem' }}>Transparent</span>
+              </label>
             </div>
           </div>
 
@@ -273,10 +288,22 @@ function App() {
             </p>
           </div>
 
-          <button onClick={handleDownload} className="btn btn-primary download-btn">
-            <Download size={20} />
-            Download QR Code
-          </button>
+          <div className="download-controls">
+            <select
+              className="input-field format-select"
+              value={fileExt}
+              onChange={(e) => setFileExt(e.target.value as any)}
+            >
+              <option value="png">PNG</option>
+              <option value="svg">SVG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="webp">WEBP</option>
+            </select>
+            <button onClick={handleDownload} className="btn btn-primary download-btn flex-1">
+              <Download size={20} />
+              Download High-Res
+            </button>
+          </div>
         </div>
       </main>
     </div>

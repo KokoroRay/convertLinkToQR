@@ -348,6 +348,29 @@ select.input-field {
   border-radius: 1rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-wrapper canvas, .qr-wrapper svg {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.download-controls {
+  display: flex;
+  width: 100%;
+  max-width: 350px;
+  gap: 0.5rem;
+}
+
+.format-select {
+  width: 100px;
+  flex-shrink: 0;
 }
 
 .qr-wrapper:hover {
