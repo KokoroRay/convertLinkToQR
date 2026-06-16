@@ -5,7 +5,7 @@ import QRCodeStyling, {
   type CornerDotType,
   type ErrorCorrectionLevel
 } from 'qr-code-styling';
-import { Download, Link2, Settings2, Upload } from 'lucide-react';
+import { Download, Link2, Settings2, Upload, Check } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -77,37 +77,50 @@ function App() {
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Create a local object URL for the uploaded file
       const objectUrl = URL.createObjectURL(file);
       setLogoUrl(objectUrl);
+      setIncludeLogo(true);
     }
   };
 
+  const dotStyles: { value: DotType; label: string; icon: React.ReactNode }[] = [
+    { value: 'square', label: 'Square', icon: <rect x="4" y="4" width="16" height="16" /> },
+    { value: 'dots', label: 'Dots', icon: <circle cx="12" cy="12" r="8" /> },
+    { value: 'rounded', label: 'Rounded', icon: <rect x="4" y="4" width="16" height="16" rx="4" /> },
+    { value: 'extra-rounded', label: 'Extra Rounded', icon: <rect x="4" y="4" width="16" height="16" rx="8" /> },
+    { value: 'classy', label: 'Classy', icon: <path d="M4 12v-4a4 4 0 0 1 4-4h8v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" /> },
+    { value: 'classy-rounded', label: 'Classy Rounded', icon: <path d="M4 12v-4a4 4 0 0 1 4-4h8v8a4 4 0 0 1-4 4H4v-4z" /> },
+  ];
+
+  const cornerStyles: { value: CornerSquareType; label: string; icon: React.ReactNode }[] = [
+    { value: 'square', label: 'Square', icon: <rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3" /> },
+    { value: 'dot', label: 'Dot', icon: <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="3" /> },
+    { value: 'extra-rounded', label: 'Extra Rounded', icon: <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="currentColor" strokeWidth="3" /> },
+  ];
+
   return (
-    <div className="w-full flex flex-col items-center">
-      <header className="w-full max-w-7xl mx-auto py-8 px-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-500/20 rounded-xl">
-            <Link2 className="text-blue-400" size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">
-              QR <span className="text-gradient">Generator</span>
-            </h1>
-            <p className="text-gray-400 mt-1">Convert your links into professional QR codes instantly.</p>
-          </div>
+    <div className="app-wrapper">
+      <header className="app-header">
+        <div className="header-icon">
+          <Link2 size={32} />
+        </div>
+        <div className="header-text">
+          <h1>
+            QR <span className="text-gradient">Generator</span>
+          </h1>
+          <p>Convert your links into professional QR codes instantly.</p>
         </div>
       </header>
 
       <main className="app-container">
         {/* Left Panel - Controls */}
-        <div className="glass-panel p-8 rounded-2xl flex flex-col gap-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Settings2 size={20} className="text-blue-400" />
-            <h2 className="text-xl font-semibold">Customization</h2>
+        <div className="glass-panel controls-panel">
+          <div className="section-title">
+            <Settings2 size={20} />
+            <h2>Customization</h2>
           </div>
 
-          <div>
+          <div className="input-group">
             <label className="label">Destination URL</label>
             <input
               type="text"
@@ -118,36 +131,36 @@ function App() {
             />
           </div>
 
-          <div className="flex gap-4">
-            <div className="w-full">
+          <div className="color-grid">
+            <div className="input-group">
               <label className="label">Foreground Color</label>
-              <div className="flex gap-2">
+              <div className="color-picker-wrapper">
                 <input
                   type="color"
-                  className="h-12 w-12 rounded cursor-pointer border-0 p-0 bg-transparent"
+                  className="color-picker"
                   value={fgColor}
                   onChange={(e) => setFgColor(e.target.value)}
                 />
                 <input
                   type="text"
-                  className="input-field flex-1"
+                  className="input-field"
                   value={fgColor}
                   onChange={(e) => setFgColor(e.target.value)}
                 />
               </div>
             </div>
-            <div className="w-full">
+            <div className="input-group">
               <label className="label">Background Color</label>
-              <div className="flex gap-2">
+              <div className="color-picker-wrapper">
                 <input
                   type="color"
-                  className="h-12 w-12 rounded cursor-pointer border-0 p-0 bg-transparent"
+                  className="color-picker"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
                 />
                 <input
                   type="text"
-                  className="input-field flex-1"
+                  className="input-field"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
                 />
@@ -155,122 +168,112 @@ function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-700">
-            <div>
-              <label className="label">Error Correction Level</label>
-              <select
-                className="input-field appearance-none cursor-pointer"
-                value={level}
-                onChange={(e) => setLevel(e.target.value as ErrorCorrectionLevel)}
-              >
-                <option value="L">Low (7%)</option>
-                <option value="M">Medium (15%)</option>
-                <option value="Q">Quartile (25%)</option>
-                <option value="H">High (30%)</option>
-              </select>
-            </div>
+          <div className="input-group">
+            <label className="label">Error Correction Level</label>
+            <select
+              className="input-field"
+              value={level}
+              onChange={(e) => setLevel(e.target.value as ErrorCorrectionLevel)}
+            >
+              <option value="L">Low (7%)</option>
+              <option value="M">Medium (15%)</option>
+              <option value="Q">Quartile (25%)</option>
+              <option value="H">High (30%) - Recommended for logos</option>
+            </select>
+          </div>
 
-            <div>
-              <label className="label">QR Style (Dots)</label>
-              <select
-                className="input-field appearance-none cursor-pointer"
-                value={dotType}
-                onChange={(e) => setDotType(e.target.value as DotType)}
-              >
-                <option value="square">Square</option>
-                <option value="dots">Dots</option>
-                <option value="rounded">Rounded</option>
-                <option value="extra-rounded">Extra Rounded</option>
-                <option value="classy">Classy</option>
-                <option value="classy-rounded">Classy Rounded</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="label">Corner Squares Style</label>
-              <select
-                className="input-field appearance-none cursor-pointer"
-                value={cornerSquareType}
-                onChange={(e) => setCornerSquareType(e.target.value as CornerSquareType)}
-              >
-                <option value="square">Square</option>
-                <option value="dot">Dot</option>
-                <option value="extra-rounded">Extra Rounded</option>
-              </select>
-            </div>
+          <div className="divider"></div>
 
-            <div>
-              <label className="label">Corner Dots Style</label>
-              <select
-                className="input-field appearance-none cursor-pointer"
-                value={cornerDotType}
-                onChange={(e) => setCornerDotType(e.target.value as CornerDotType)}
-              >
-                <option value="square">Square</option>
-                <option value="dot">Dot</option>
-              </select>
+          <div className="input-group">
+            <label className="label">QR Pattern Style</label>
+            <div className="style-grid">
+              {dotStyles.map((style) => (
+                <button
+                  key={style.value}
+                  className={`style-btn ${dotType === style.value ? 'active' : ''}`}
+                  onClick={() => setDotType(style.value)}
+                  title={style.label}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    {style.icon}
+                  </svg>
+                  {dotType === style.value && <Check size={14} className="active-icon" />}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-700">
-            <label className="flex items-center gap-3 cursor-pointer">
+          <div className="input-group">
+            <label className="label">Corner Style</label>
+            <div className="style-grid corners">
+              {cornerStyles.map((style) => (
+                <button
+                  key={style.value}
+                  className={`style-btn ${cornerSquareType === style.value ? 'active' : ''}`}
+                  onClick={() => {
+                    setCornerSquareType(style.value);
+                    setCornerDotType(style.value === 'extra-rounded' ? 'dot' : style.value as CornerDotType);
+                  }}
+                  title={style.label}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    {style.icon}
+                  </svg>
+                  {cornerSquareType === style.value && <Check size={14} className="active-icon" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="divider"></div>
+
+          <div className="input-group">
+            <label className="checkbox-label">
               <input
                 type="checkbox"
-                className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500/50 cursor-pointer"
                 checked={includeLogo}
                 onChange={(e) => setIncludeLogo(e.target.checked)}
               />
-              <span className="font-medium">Embed Logo inside QR</span>
+              <span className="checkbox-text">Embed Logo</span>
             </label>
 
             {includeLogo && (
-              <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                <label className="label flex items-center gap-2">
-                  <Upload size={16} /> Upload Logo Image
+              <div className="logo-upload-section">
+                <label className="upload-btn">
+                  <Upload size={16} /> Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden-input"
+                  />
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="block w-full text-sm text-slate-400
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-500/10 file:text-blue-400
-                    hover:file:bg-blue-500/20 cursor-pointer"
-                />
                 {logoUrl && (
-                  <div className="mt-3 flex items-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                    <img src={logoUrl} alt="Logo preview" className="w-10 h-10 object-contain rounded" />
-                    <span className="text-sm text-slate-300">Logo selected</span>
+                  <div className="logo-preview-wrapper">
+                    <img src={logoUrl} alt="Logo preview" className="logo-preview-image" />
+                    <span>Logo Selected</span>
                   </div>
                 )}
-                <p className="text-xs text-slate-400 mt-3">
-                  Tip: Use a square image with a transparent background for best results.
-                </p>
               </div>
             )}
           </div>
         </div>
 
         {/* Right Panel - Preview */}
-        <div className="flex flex-col gap-6 items-center">
-          <div className="glass-panel w-full p-8 rounded-2xl flex flex-col items-center justify-center min-h-[400px]">
+        <div className="preview-panel">
+          <div className="glass-panel preview-container">
             <div 
-              className="p-4 bg-white rounded-xl shadow-2xl transition-transform hover:scale-105 duration-300 overflow-hidden"
+              className="qr-wrapper"
               style={{ backgroundColor: bgColor }}
             >
-              <div ref={qrRef} className="qr-container" />
+              <div ref={qrRef} />
             </div>
-            <p className="text-slate-400 mt-6 text-sm text-center">
+            <p className="preview-hint">
               Scan this code with your phone's camera<br/>to test the destination.
             </p>
           </div>
 
-          <button 
-            onClick={handleDownload}
-            className="btn btn-primary w-full max-w-xs shadow-lg shadow-blue-500/25"
-          >
+          <button onClick={handleDownload} className="btn btn-primary download-btn">
             <Download size={20} />
             Download QR Code
           </button>
